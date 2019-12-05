@@ -219,9 +219,7 @@ func main() {
 	switch Button(os.Getenv("BLOCK_BUTTON")) {
 	case LeftButton:
 		// Toggle elapsed/remaining.
-		if timer.IsRunning() {
-			timer.ToggleView()
-		}
+		timer.ToggleView()
 	case MiddleButton:
 		// Start the timer if not started yet
 		if time.Time.IsZero(timer.StartTime) {
