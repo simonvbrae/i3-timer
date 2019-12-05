@@ -82,6 +82,7 @@ func (t *Timer) Alarm() {
 func (t *Timer) Reset() {
 	t.StartTime = time.Time{}
 	t.Duration = time.Duration(*durationFlag) * time.Minute
+	t.ShowElapsed = false
 	t.Save()
 }
 
@@ -219,7 +220,9 @@ func main() {
 	switch Button(os.Getenv("BLOCK_BUTTON")) {
 	case LeftButton:
 		// Toggle elapsed/remaining.
-		timer.ToggleView()
+		if timer.IsRunning() {
+			timer.ToggleView()
+		}
 	case MiddleButton:
 		// Start the timer if not started yet
 		if time.Time.IsZero(timer.StartTime) {
