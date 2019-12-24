@@ -33,6 +33,7 @@ type Timer struct {
 	StartTime   time.Time     `json:"startTime"`
 	ShowElapsed bool          `json:"showElapsed"`
 	IsPaused 	bool		  `json:"isPaused"`
+	PausedDuration time.Duration  `json:"pausedDuration"`
 }
 
 // Remaining returns the remaining duration
@@ -47,6 +48,8 @@ func (t *Timer) Remaining() time.Duration {
 // Toggle pause on the timer
 func (t *Timer) TogglePause() {
 	t.IsPaused = !t.IsPaused
+
+	t.Save()
 }
 
 // IsRunning check if the timer is running
@@ -115,6 +118,7 @@ func (t *Timer) String() string {
 	if t.IsRunning() {
 		elapsed = time.Since(t.StartTime)
 	}
+
 	markupStart := ""
 	markupEnd := ""
 	if *colorsFlag && t.IsRunning() {
@@ -134,7 +138,7 @@ func (t *Timer) String() string {
 	}
 
 	// Default to showing remaining time.
-	timerValue := (t.Duration - elapsed).Truncate(time.Duration(time.Second))
+	timerValue := (t.Duration + t.PausedDuration - elapsed).Truncate(time.Duration(time.Second))
 	// Status string
 	status := "I"
 	if t.IsRunning() {
@@ -225,6 +229,11 @@ func main() {
 	timer, err := LoadTimer()
 	if err != nil {
 		panic(err)
+	}
+
+	if timer.IsPaused {
+		timer.PausedDuration += 1
+		timer.Save()
 	}
 
 	switch Button(os.Getenv("BLOCK_BUTTON")) {
