@@ -34,6 +34,7 @@ type Timer struct {
 	ShowElapsed bool          `json:"showElapsed"`
 	IsPaused 	bool		  `json:"isPaused"`
 	PausedDuration time.Duration  `json:"pausedDuration"`
+	PauseStart time.Time	  `json:"pauseStart"`
 }
 
 // Remaining returns the remaining duration
@@ -48,6 +49,10 @@ func (t *Timer) Remaining() time.Duration {
 // Toggle pause on the timer
 func (t *Timer) TogglePause() {
 	t.IsPaused = !t.IsPaused
+
+	if t.IsPaused {
+		t.PauseStart = time.Now()
+	}
 
 	t.Save()
 }
@@ -92,12 +97,16 @@ func (t *Timer) Reset() {
 	t.StartTime = time.Time{}
 	t.Duration = time.Duration(*durationFlag) * time.Minute
 	t.ShowElapsed = false
+	t.IsPaused = false
+	t.PausedDuration = 0
 	t.Save()
 }
 
 // Start the timer
 func (t *Timer) Start() {
 	t.StartTime = time.Now()
+	t.IsPaused = false
+	t.PausedDuration = 0
 	t.Save()
 }
 
@@ -232,7 +241,9 @@ func main() {
 	}
 
 	if timer.IsPaused {
-		timer.PausedDuration += 1
+		timer.PausedDuration += time.Since(timer.PauseStart)
+
+		timer.PauseStart = time.Now()
 		timer.Save()
 	}
 
