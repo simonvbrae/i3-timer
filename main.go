@@ -32,6 +32,7 @@ type Timer struct {
 	Duration    time.Duration `json:"duration"`
 	StartTime   time.Time     `json:"startTime"`
 	ShowElapsed bool          `json:"showElapsed"`
+	IsPaused 	bool		  `json:"isPaused"`
 }
 
 // Remaining returns the remaining duration
@@ -136,6 +137,9 @@ func (t *Timer) String() string {
 		if t.ShowElapsed {
 			status = "E"
 		}
+		if t.IsPaused {
+			status = "P"
+		}
 	}
 	// Show elapsed if timer have been toggled.
 	if t.ShowElapsed {
@@ -227,6 +231,9 @@ func main() {
 		// Start the timer if not started yet
 		if time.Time.IsZero(timer.StartTime) {
 			timer.Start()
+		} else {
+			// Toggle pause on timer if started
+		 	timer.Start()
 		}
 	case RightButton:
 		// Stop the timer if it's started
