@@ -44,6 +44,11 @@ func (t *Timer) Remaining() time.Duration {
 	return (t.Duration - elapsed).Truncate(time.Duration(time.Second))
 }
 
+// Toggle pause on the timer
+func (t *Timer) TogglePause() {
+	t.IsPaused = !t.IsPaused
+}
+
 // IsRunning check if the timer is running
 func (t *Timer) IsRunning() bool {
 	return !time.Time.IsZero(t.StartTime)
@@ -221,6 +226,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	switch Button(os.Getenv("BLOCK_BUTTON")) {
 	case LeftButton:
 		// Toggle elapsed/remaining.
@@ -233,7 +239,7 @@ func main() {
 			timer.Start()
 		} else {
 			// Toggle pause on timer if started
-		 	timer.Start()
+		 	timer.TogglePause()
 		}
 	case RightButton:
 		// Stop the timer if it's started
