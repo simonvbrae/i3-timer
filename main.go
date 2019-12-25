@@ -43,7 +43,7 @@ func (t *Timer) Remaining() time.Duration {
 	if t.IsRunning() {
 		elapsed = time.Since(t.StartTime)
 	}
-	return (t.Duration - elapsed).Truncate(time.Duration(time.Second))
+	return (t.Duration + t.PausedDuration - elapsed).Truncate(time.Duration(time.Second))
 }
 
 // Toggle pause on the timer
