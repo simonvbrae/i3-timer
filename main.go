@@ -43,7 +43,7 @@ func (t *Timer) Remaining() time.Duration {
 	if t.IsRunning() {
 		elapsed = time.Since(t.StartTime)
 	}
-	return (t.Duration + t.PausedDuration - elapsed).Truncate(time.Duration(time.Second))
+	return (t.Duration + t.GetPausedDuration() - elapsed).Truncate(time.Duration(time.Second))
 }
 
 // Toggle pause on the timer
@@ -52,9 +52,20 @@ func (t *Timer) TogglePause() {
 
 	if t.IsPaused {
 		t.PauseStart = time.Now()
+	} else {
+		t.PausedDuration += time.Since(t.PauseStart)
 	}
 
 	t.Save()
+}
+
+func (t *Timer) GetPausedDuration() time.Duration {
+	var totalPauseTime time.Duration = t.PausedDuration
+	if t.IsPaused {
+		totalPauseTime += time.Since(t.PauseStart)
+	}
+
+	return totalPauseTime
 }
 
 // IsRunning check if the timer is running
@@ -96,7 +107,6 @@ func (t *Timer) Alarm() {
 func (t *Timer) Reset() {
 	t.StartTime = time.Time{}
 	t.Duration = time.Duration(*durationFlag) * time.Minute
-	t.ShowElapsed = false
 	t.IsPaused = false
 	t.PausedDuration = 0
 	t.Save()
@@ -105,8 +115,6 @@ func (t *Timer) Reset() {
 // Start the timer
 func (t *Timer) Start() {
 	t.StartTime = time.Now()
-	t.IsPaused = false
-	t.PausedDuration = 0
 	t.Save()
 }
 
@@ -127,7 +135,7 @@ func (t *Timer) String() string {
 	if t.IsRunning() {
 		elapsed = time.Since(t.StartTime)
 	}
-
+	
 	markupStart := ""
 	markupEnd := ""
 	if *colorsFlag && t.IsRunning() {
@@ -147,7 +155,7 @@ func (t *Timer) String() string {
 	}
 
 	// Default to showing remaining time.
-	timerValue := (t.Duration + t.PausedDuration - elapsed).Truncate(time.Duration(time.Second))
+	timerValue := (t.Duration + t.GetPausedDuration() - elapsed).Truncate(time.Duration(time.Second))
 	// Status string
 	status := "I"
 	if t.IsRunning() {
@@ -240,19 +248,10 @@ func main() {
 		panic(err)
 	}
 
-	if timer.IsPaused {
-		timer.PausedDuration += time.Since(timer.PauseStart)
-
-		timer.PauseStart = time.Now()
-		timer.Save()
-	}
-
 	switch Button(os.Getenv("BLOCK_BUTTON")) {
 	case LeftButton:
 		// Toggle elapsed/remaining.
-		if timer.IsRunning() {
-			timer.ToggleView()
-		}
+		timer.ToggleView()
 	case MiddleButton:
 		// Start the timer if not started yet
 		if time.Time.IsZero(timer.StartTime) {
